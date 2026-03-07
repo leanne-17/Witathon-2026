@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Settings</title>
+</head>
+<body>
+
+<h1>Game Settings</h1>
+
+<!-- Settings Form -->
+<form method="POST">
+    <label>Game Type:</label>
+    <select name="game_type">
+        <option value="quiz">Quiz</option>
+        <option value="flashcards">Flashcards</option>
+        <option value="summary">Summary</option>
+    </select>
+    <br><br>
+
+    <label>Difficulty:</label>
+    <select name="difficulty">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+    </select>
+    <br><br>
+
+    <label>Enable Timer:</label>
+    <input type="checkbox" name="timer">
+    <br><br>
+
+    <label>Background Color:</label>
+    <input type="color" name="bg_color" value="#ffffff">
+    <br><br>
+
+    <label>Text Color:</label>
+    <input type="color" name="text_color" value="#000000">
+    <br><br>
+
+    <button type="submit">Save Settings & Start Game</button>
+</form>
+
+<hr>
+
+<!-- File Upload Form -->
+<h2>Upload a Document</h2>
+<form action="/upload" method="POST" enctype="multipart/form-data">
+    <input type="file" name="document" required>
+    <button type="submit">Upload File</button>
+</form>
+
+<h2>Text-to-Speech</h2>
+<textarea id="tts_text" rows="5" cols="50" placeholder="Enter text to read aloud"></textarea>
+<br><br>
+<button onclick="speakText()">Read Aloud</button>
+
+</body>
+<script>
+function speakText() {
+    const text = document.getElementById("tts_text").value;
+
+    if (!text) {
+        alert("Please enter some text to read aloud.");
+        return;
+    }
+
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+
+    // Create a new utterance
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    // Optional: customize voice properties
+    utterance.rate = 1;   // speed: 0.1 - 10
+    utterance.pitch = 1;  // pitch: 0 - 2
+    utterance.volume = 1; // volume: 0 - 1
+
+    // Speak the text
+    window.speechSynthesis.speak(utterance);
+}
+</script>
+</html>
