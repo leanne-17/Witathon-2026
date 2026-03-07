@@ -49,17 +49,38 @@ generator = pipeline(
 
 def generate_summary(text):
     prompt = f"Summarize the following content for students:\n\n{text}\n\nSummary:"
-    output = generator(prompt, max_length=200, do_sample=True)
+    output = generator(
+    prompt,
+    max_new_tokens=100,
+    do_sample=True,
+    temperature=0.7,       # higher = more random
+    top_k=50,              # limits choices to top 50 tokens
+    top_p=0.9,             # nucleus sampling
+    repetition_penalty=1.2)
     return output[0]["generated_text"]
 
 def generate_quiz(text):
     prompt = f"Create a short multiple-choice quiz based on the following content:\n\n{text}\n\nQuiz:"
-    output = generator(prompt, max_length=200, do_sample=True)
+    output = generator(
+    prompt,
+    max_new_tokens=100,
+    do_sample=True,
+    temperature=0.7,       # higher = more random
+    top_k=50,              # limits choices to top 50 tokens
+    top_p=0.9,             # nucleus sampling
+    repetition_penalty=1.2)
     return output[0]["generated_text"]
 
 def generate_explanation(text):
     prompt = f"Explain the following concepts in simple terms for students:\n\n{text}\n\nExplanation:"
-    output = generator(prompt, max_length=200, do_sample=True)
+    output = generator(
+    prompt,
+    max_new_tokens=100,
+    do_sample=True,
+    temperature=0.7,       # higher = more random
+    top_k=50,              # limits choices to top 50 tokens
+    top_p=0.9,             # nucleus sampling
+    repetition_penalty=1.2)
     return output[0]["generated_text"]
 
 # ===== Routes =====
