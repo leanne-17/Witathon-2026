@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+
+<link rel="stylesheet" href="assets/css/style.css">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+</head>
+<body>
+
+<div class="sidebar">
+
+    <div class="top">
+        <div class="logo">
+            <img src="assets/images/Robot.png" alt="logo" class="logo-img">
+        </div>
+
+        <i class="bx bx-menu" id="btn"></i>
+    </div>
+
+    <ul>
+        <li>
+            <a href="#">
+                <i class="bx bxs-home"></i>
+                <span class="nav-item">Home</span>
+            </a>
+            <span class="tooltip">Home</span>
+        </li>
+
+        <li>
+            <a href="#">
+                <i class="bx bxs-cog"></i>
+                <span class="nav-item">Account Settings</span>
+            </a>
+            <span class="tooltip">Account Settings</span>
+        </li>
+
+        <li>
+            <a href="#">
+                <i class="bx bxs-log-out"></i>
+                <span class="nav-item">Logout</span>
+            </a>
+            <span class="tooltip">Logout</span>
+        </li>
+    </ul>
+
+</div>
+
+
+<div class="main-content">
+
+<h1 class="headerDash">Dashboard</h1>
+
+<div class="btn-group">
+
+<a href="#" class="dash-btn">Quiz</a>
+
+<a href="#" class="dash-btn">Flashcards</a>
+
+<a href="#" class="dash-btn">Summary</a>
+
+<a href="#" class="dash-btn">Matching Game</a>
+
+<a href="boss_battle.html" class="dash-btn">Boss Battle Game</a>
+
+</div>
+
+</div>
+
+
+<script>
+
+const btn = document.querySelector('#btn');
+const sidebar = document.querySelector('.sidebar');
+
+btn.onclick = function () {
+    sidebar.classList.toggle('active');
+}
+
+</script>
+
+</body>
+</html>
