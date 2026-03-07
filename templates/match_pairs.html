@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Matching Game</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+background:#0f172a;
+color:white;
+padding:40px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+max-width:700px;
+margin:auto;
+}
+
+.box{
+background:#1e293b;
+padding:15px;
+cursor:pointer;
+border-radius:6px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Matching Game</h1>
+
+<div class="grid" id="game"></div>
+
+<script>
+
+let pairs = {{ match_game | tojson }};
+
+let terms = pairs.map(p=>p.term);
+let defs = pairs.map(p=>p.definition).sort(()=>Math.random()-0.5);
+
+let selectedTerm = null;
+
+let game = document.getElementById("game");
+
+terms.forEach(term=>{
+
+let box = document.createElement("div");
+box.className="box";
+box.innerText=term;
+
+box.onclick=()=>{
+selectedTerm=term;
+};
+
+game.appendChild(box);
+
+});
+
+defs.forEach(def=>{
+
+let box = document.createElement("div");
+box.className="box";
+box.innerText=def;
+
+box.onclick=()=>{
+
+let correct = pairs.find(p=>p.term===selectedTerm);
+
+if(correct.definition===def){
+
+alert("Correct match!");
+
+}else{
+
+alert("Wrong!");
+
+}
+
+};
+
+game.appendChild(box);
+
+});
+
+</script>
+
+</body>
+</html>

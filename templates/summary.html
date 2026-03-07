@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Summary</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#1e293b;
+color:white;
+padding:40px;
+}
+
+.container{
+max-width:700px;
+margin:auto;
+background:#334155;
+padding:30px;
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>AI Study Summary</h1>
+
+<p id="summary"></p>
+
+</div>
+
+<script>
+
+let data = {{ summary | tojson }};
+
+document.getElementById("summary").innerText =
+data.summary;
+
+</script>
+
+</body>
+
+</html>

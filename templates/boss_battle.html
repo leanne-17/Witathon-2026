@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Boss Battle Exam</title>
+
+<style>
+
+body{
+    font-family:Arial;
+    background:#111;
+    color:white;
+    text-align:center;
+}
+
+#boss{
+    width:200px;
+    margin-top:30px;
+}
+
+.health-bar{
+    width:300px;
+    height:25px;
+    background:#444;
+    margin:auto;
+}
+
+.health{
+    height:100%;
+    background:red;
+    width:100%;
+}
+
+.option{
+    display:block;
+    padding:10px;
+    margin:10px;
+    background:#333;
+    cursor:pointer;
+    border-radius:5px;
+}
+
+.option:hover{
+    background:#555;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>⚔️ Boss Battle Exam</h1>
+
+<img id="boss" src="https://i.imgur.com/OdL0XPt.png">
+
+<h3>Boss Health</h3>
+
+<div class="health-bar">
+<div id="bossHealth" class="health"></div>
+</div>
+
+<h3>Your Health</h3>
+
+<div class="health-bar">
+<div id="playerHealth" class="health" style="background:green"></div>
+</div>
+
+<h2 id="question"></h2>
+
+<div id="options"></div>
+
+<script>
+
+let questions = {{ questions | tojson }};
+let current = 0;
+
+let bossHP = 100;
+let playerHP = 100;
+
+function loadQuestion(){
+
+    if(current >= questions.length){
+        alert("Boss defeated!");
+        return;
+    }
+
+    let q = questions[current];
+
+    document.getElementById("question").innerText = q.question;
+
+    let optDiv = document.getElementById("options");
+    optDiv.innerHTML = "";
+
+    q.options.forEach(option => {
+
+        let btn = document.createElement("div");
+        btn.className = "option";
+        btn.innerText = option;
+
+        btn.onclick = () => answer(option);
+
+        optDiv.appendChild(btn);
+
+    });
+
+}
+
+function answer(choice){
+
+    let correct = questions[current].answer;
+
+    if(choice === correct){
+
+        bossHP -= 20;
+
+    }else{
+
+        playerHP -= 20;
+
+    }
+
+    updateHealth();
+
+    current++;
+
+    setTimeout(loadQuestion,500);
+
+}
+
+function updateHealth(){
+
+    document.getElementById("bossHealth").style.width = bossHP + "%";
+    document.getElementById("playerHealth").style.width = playerHP + "%";
+
+    if(playerHP <= 0){
+        alert("You were defeated!");
+    }
+
+    if(bossHP <= 0){
+        alert("Victory!");
+    }
+
+}
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>

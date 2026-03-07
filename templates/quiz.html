@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>AI Quiz Game</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background: linear-gradient(135deg,#4f46e5,#9333ea);
+    color:white;
+    text-align:center;
+    padding:40px;
+}
+
+.container{
+    background:white;
+    color:black;
+    max-width:700px;
+    margin:auto;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+h1{
+    margin-bottom:10px;
+}
+
+#progressBar{
+    height:12px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+    margin-bottom:20px;
+}
+
+#progress{
+    height:100%;
+    width:0%;
+    background:#4f46e5;
+}
+
+.option{
+    display:block;
+    background:#f3f4f6;
+    padding:12px;
+    margin:10px 0;
+    border-radius:8px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.option:hover{
+    background:#e0e7ff;
+}
+
+.correct{
+    background:#4ade80 !important;
+}
+
+.wrong{
+    background:#f87171 !important;
+}
+
+#nextBtn{
+    margin-top:20px;
+    padding:10px 20px;
+    border:none;
+    border-radius:6px;
+    background:#4f46e5;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+#score{
+    margin-top:20px;
+    font-size:18px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🧠 AI Quiz</h1>
+
+<div id="progressBar">
+<div id="progress"></div>
+</div>
+
+<h2 id="question">Loading...</h2>
+
+<div id="options"></div>
+
+<button id="nextBtn" onclick="nextQuestion()" style="display:none">
+Next Question →
+</button>
+
+<div id="score"></div>
+
+</div>
+
+<script>
+
+let questions = {{ quiz | tojson }};
+
+let current = 0;
+let score = 0;
+
+function loadQuestion(){
+
+    let q = questions[current];
+
+    document.getElementById("question").innerText = q.question;
+
+    let optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    document.getElementById("nextBtn").style.display="none";
+
+    q.options.forEach(option => {
+
+        let btn = document.createElement("div");
+
+        btn.className = "option";
+        btn.innerText = option;
+
+        btn.onclick = () => checkAnswer(btn, option);
+
+        optionsDiv.appendChild(btn);
+
+    });
+
+    updateProgress();
+
+}
+
+function checkAnswer(element, choice){
+
+    let correct = questions[current].answer;
+
+    let options = document.querySelectorAll(".option");
+
+    options.forEach(opt => opt.onclick=null);
+
+    if(choice === correct){
+
+        element.classList.add("correct");
+        score++;
+
+    }else{
+
+        element.classList.add("wrong");
+
+        options.forEach(opt=>{
+            if(opt.innerText === correct){
+                opt.classList.add("correct");
+            }
+        });
+
+    }
+
+    document.getElementById("nextBtn").style.display="inline-block";
+
+}
+
+function nextQuestion(){
+
+    current++;
+
+    if(current >= questions.length){
+        showResults();
+        return;
+    }
+
+    loadQuestion();
+
+}
+
+function updateProgress(){
+
+    let percent = (current / questions.length) * 100;
+
+    document.getElementById("progress").style.width = percent + "%";
+
+}
+
+function showResults(){
+
+    document.querySelector(".container").innerHTML = `
+        <h1>🎉 Quiz Complete</h1>
+        <h2>Your Score: ${score} / ${questions.length}</h2>
+        <button onclick="location.reload()">Play Again</button>
+    `;
+
+}
+
+loadQuestion();
+
+</script>
+
+</body>
+
+</html>
