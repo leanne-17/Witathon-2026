@@ -22,15 +22,14 @@ body {
     justify-content: space-between;  /* Pushes content apart */
     align-items: center;
 
-    margin: 150px auto;
+    margin: 110px auto;
 }
 
 .upload_button {
-    width: 150px;        /* Fixed width */
-    height: 40px;        /* Fixed height */
-    padding: 10px 20px;  /* Top/Bottom Left/Right */
-    font-size: 16px;     /* Text size */
-    
+    width: 200px;        /* Fixed width */
+    height: 60px;        /* Fixed height */
+    font-size: 20px;     /* Text size */
+    text-align: center;
     /* COLOR properties */
     background-color: #2D68C4;  /* Button background */
     color: white;                /* Text color */
@@ -59,11 +58,23 @@ body {
 nav {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 40px;
 }
 
-nav a {
-  text-decoration: none;
+a:link {
+    text-decoration: none;
+}
+
+a:visited {
+    text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:active {
+    text-decoration: underline;
 }
 
 nav h1 {
