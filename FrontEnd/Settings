@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings</title>
+</head>
+<body>
+
+<h1>Settings</h1>
+
+<form method="POST">
+
+    <label>Game Type:</label>
+    <select name="game_type">
+        <option value="quiz">Quiz</option>
+        <option value="flashcards">Flashcards</option>
+        <option value="summary">Summary</option>
+    </select>
+    <br><br>
+
+    <label>Difficulty:</label>
+    <select name="difficulty">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+    </select>
+    <br><br>
+
+    <label>Enable Timer:</label>
+    <input type="checkbox" name="timer">
+    <br><br>
+    <!DOCTYPE html>
+<html>
+<head>
+    <title>Game Settings</title>
+</head>
+<body>
+
+<h1>Game Settings</h1>
+
+<form method="POST">
+
+    <label>Game Type:</label>
+    <select name="game_type">
+        <option value="quiz">Quiz</option>
+        <option value="flashcards">Flashcards</option>
+        <option value="summary">Summary</option>
+    </select>
+    <br><br>
+
+    <label>Difficulty:</label>
+    <select name="difficulty">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+    </select>
+    <br><br>
+
+    <label>Enable Timer:</label>
+    <input type="checkbox" name="timer">
+    <br><br>
+
+    <!-- New color settings -->
+    <label>Background Color:</label>
+    <input type="color" name="bg_color" value="#ffffff">
+    <br><br>
+
+    <label>Text Color:</label>
+    <input type="color" name="text_color" value="#000000">
+    <br><br>
+    <button type="submit">Save Settings & Start Game</button>
+
+</form>
