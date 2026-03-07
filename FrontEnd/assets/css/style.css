@@ -1,0 +1,76 @@
+/* This is a CSS comment - it won't affect the page */
+
+/* Selector: all h1 elements */
+h1 {
+    color: blue;           /* Changes text color */
+    font-size: 48px;       /* Changes text size */
+    text-align: center;    /* Centers the text */
+    font-family: Arial, sans-serif;  /* Changes the font */
+}
+
+body { 
+    background-color: #E0F6F9;
+ }
+
+ .my-box {
+    border: 2px solid black;     /* Adds the visible border */
+    padding: 20px;                /* Space inside the box */
+    margin: 20px;                 /* Space outside the box */
+    background-color: #f0f0f0;    /* Light gray background */
+}
+/* Selector: all paragraph elements */
+p {
+    color: #333333;        /* Dark gray text */
+    line-height: 1.6;      /* Space between lines */
+    font-size: 18px;       /* Text size */
+    margin-bottom: 20px;   /* Space after each paragraph */
+}
+
+/* Selector: all links */
+a {
+    color: hotpink;        /* Link color */
+    text-decoration: none; /* Removes the underline */
+}
+
+/* What happens when you hover over a link */
+a:hover {
+    text-decoration: underline;  /* Underline appears on hover */
+    color: deeppink;             /* Color changes on hover */
+}
+
+.button {
+    background-color: #F0F8FF ;
+    border-radius: 5px;
+    width: 100px;
+    height: 50px;
+}
+
+#upload_box {
+    border-radius: 25px;
+    background-color: #E0F6F9;
+    border: 2px solid #002244;
+    padding: 20px;
+    width: 200px;
+    height: 150px;
+    text-align: center;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;  /* Pushes content apart */
+    align-items: center;
+
+    margin: 200px auto;
+}
+
+.upload_button {
+    width: 150px;        /* Fixed width */
+    height: 40px;        /* Fixed height */
+    padding: 10px 20px;  /* Top/Bottom Left/Right */
+    font-size: 16px;     /* Text size */
+    
+    /* COLOR properties */
+    background-color: #2D68C4;  /* Button background */
+    color: white;                /* Text color */
+    border: 2px solid #2D68C4;
+    border-radius: 25px;
+}
