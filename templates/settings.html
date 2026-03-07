@@ -2,6 +2,12 @@
 <html>
 <head>
     <title>Game Settings</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background-color: #f7f7f7; }
+        label { display: block; margin-top: 10px; }
+        input, select { margin-top: 5px; padding: 5px; width: 200px; }
+        button { margin-top: 15px; padding: 10px 20px; }
+    </style>
 </head>
 <body>
 
@@ -45,7 +51,7 @@
 <!-- File Upload Form -->
 <h2>Upload a Document</h2>
 <form action="/upload" method="POST" enctype="multipart/form-data">
-    <input type="file" name="document" required>
+    <input type="file" name="document" accept=".pdf,.txt,.docx" required>
     <button type="submit">Upload File</button>
 </form>
 
