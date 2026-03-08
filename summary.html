@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Summary — EduPal{% endblock %}
+
+{% block extra_styles %}
+.result-header { margin-bottom: 36px; }
+.result-header h1 { font-size: 2rem; margin-bottom: 8px; }
+.summary-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent1);
+  border-radius: var(--radius);
+  padding: 32px 36px;
+  font-size: 1.05rem; line-height: 1.8;
+  color: var(--text);
+}
+.actions { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <div class="fade-up">
+    <span class="pill">Summary</span>
+    <div class="result-header">
+      <h1>Your notes, summarised 📝</h1>
+      <p style="color:var(--muted)">Here's what the AI pulled from your notes.</p>
+    </div>
+  </div>
+
+  <div class="summary-box fade-up fade-up-d1">
+    {{ summary }}
+  </div>
+
+  <div class="actions fade-up fade-up-d2">
+    <a href="/" class="btn btn-primary">← Try another mode</a>
+    <button class="btn btn-ghost" onclick="copyText()">📋 Copy</button>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyText() {
+  navigator.clipboard.writeText(document.querySelector('.summary-box').innerText);
+  event.target.textContent = '✓ Copied!';
+  setTimeout(() => event.target.textContent = '📋 Copy', 2000);
+}
+</script>
+{% endblock %}

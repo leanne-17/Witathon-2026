@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Matching Pairs — EduPal{% endblock %}
+
+{% block extra_styles %}
+.mg-header { margin-bottom: 36px; }
+.mg-header h1 { font-size: 2rem; margin-bottom: 8px; }
+
+.match-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-bottom: 28px;
+}
+.col-label {
+  font-family: 'Syne', sans-serif; font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--muted); margin-bottom: 8px;
+}
+
+.match-item {
+  padding: 14px 18px; border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--card); cursor: pointer;
+  font-size: .9rem; transition: border-color .15s, background .15s, transform .1s;
+  user-select: none;
+}
+.match-item:hover:not(.matched):not(.wrong-flash) {
+  border-color: var(--accent1);
+  background: rgba(124,106,247,.07);
+  transform: translateX(2px);
+}
+.match-item.selected {
+  border-color: var(--accent4);
+  background: rgba(247,201,72,.08);
+  box-shadow: 0 0 16px rgba(247,201,72,.25);
+}
+.match-item.matched {
+  border-color: var(--accent3);
+  background: rgba(67,232,176,.1);
+  color: var(--accent3); cursor: default;
+  text-decoration: line-through; opacity: .6;
+}
+@keyframes wrongFlash {
+  0%,100% { border-color: var(--border); background: var(--card); }
+  40%      { border-color: var(--accent2); background: rgba(247,81,106,.15); }
+}
+.match-item.wrong-flash { animation: wrongFlash .5s ease; }
+
+.score-row {
+  display: flex; gap: 24px; align-items: center;
+  color: var(--muted); font-size: .9rem; margin-bottom: 20px;
+}
+.score-row strong { color: var(--text); }
+
+.win-banner {
+  text-align: center; display: none;
+  padding: 40px; animation: fadeUp .5s ease both;
+}
+.win-banner h2 { font-size: 2rem; margin-bottom: 12px; }
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <span class="pill fade-up">Matching Pairs</span>
+  <div class="mg-header fade-up fade-up-d1">
+    <h1>Match the pairs 🔗</h1>
+    <p style="color:var(--muted)">Click a term, then click its matching definition.</p>
+  </div>
+
+  <div class="score-row fade-up fade-up-d2">
+    <span>Matched: <strong id="matched-count">0</strong> / <strong id="total-count"></strong></span>
+    <span>Attempts: <strong id="attempt-count">0</strong></span>
+  </div>
+
+  <div id="game-area">
+    <div class="match-grid">
+      <div>
+        <div class="col-label">Terms</div>
+        <div id="left-col"></div>
+      </div>
+      <div>
+        <div class="col-label">Definitions</div>
+        <div id="right-col"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="win-banner card" id="win-banner">
+    <div style="font-size:3rem;margin-bottom:16px">🎉</div>
+    <h2>All matched!</h2>
+    <p style="color:var(--muted);margin-bottom:8px">Completed in <strong id="final-attempts"></strong> attempts.</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="restartGame()">Play again 🔄</button>
+      <a href="/" class="btn btn-ghost">New file ←</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const PAIRS = {{ pairs|safe }};
+  let matched = 0, attempts = 0;
+  let selectedLeft = null, selectedRight = null;
+
+  function shuffle(arr) {
+    return [...arr].sort(() => Math.random() - .5);
+  }
+
+  function build() {
+    matched = 0; attempts = 0;
+    selectedLeft = null; selectedRight = null;
+    document.getElementById('matched-count').textContent = 0;
+    document.getElementById('attempt-count').textContent = 0;
+    document.getElementById('total-count').textContent   = PAIRS.length;
+    document.getElementById('win-banner').style.display  = 'none';
+    document.getElementById('game-area').style.display   = 'block';
+
+    const leftCol  = document.getElementById('left-col');
+    const rightCol = document.getElementById('right-col');
+    leftCol.innerHTML = ''; rightCol.innerHTML = '';
+
+    shuffle(PAIRS).forEach((p, i) => {
+      const l = makeItem(p.left,  'left',  p.left, i);
+      leftCol.appendChild(l);
+    });
+    shuffle(PAIRS).forEach((p, i) => {
+      const r = makeItem(p.right, 'right', p.left, i); // key = left term
+      rightCol.appendChild(r);
+    });
+  }
+
+  function makeItem(label, side, key, i) {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.style.marginBottom = '10px';
+    el.style.animationDelay = (i * .07) + 's';
+    el.textContent = label;
+    el.dataset.key  = key;
+    el.dataset.side = side;
+    el.addEventListener('click', () => onSelect(el));
+    return el;
+  }
+
+  function onSelect(el) {
+    if (el.classList.contains('matched')) return;
+    const side = el.dataset.side;
+
+    if (side === 'left') {
+      // Deselect previous left
+      document.querySelectorAll('.match-item[data-side=left].selected')
+        .forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedLeft = el;
+    } else {
+      document.querySelectorAll('.match-item[data-side=right].selected')
+        .forEach(e => e.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedRight = el;
+    }
+
+    if (selectedLeft && selectedRight) checkMatch();
+  }
+
+  function checkMatch() {
+    attempts++;
+    document.getElementById('attempt-count').textContent = attempts;
+
+    if (selectedLeft.dataset.key === selectedRight.dataset.key) {
+      // Correct
+      selectedLeft.classList.remove('selected');
+      selectedRight.classList.remove('selected');
+      selectedLeft.classList.add('matched');
+      selectedRight.classList.add('matched');
+      matched++;
+      document.getElementById('matched-count').textContent = matched;
+      if (matched === PAIRS.length) setTimeout(showWin, 400);
+    } else {
+      // Wrong
+      const l = selectedLeft, r = selectedRight;
+      l.classList.remove('selected'); r.classList.remove('selected');
+      l.classList.add('wrong-flash'); r.classList.add('wrong-flash');
+      setTimeout(() => { l.classList.remove('wrong-flash'); r.classList.remove('wrong-flash'); }, 600);
+    }
+    selectedLeft = null; selectedRight = null;
+  }
+
+  function showWin() {
+    document.getElementById('game-area').style.display = 'none';
+    document.getElementById('win-banner').style.display = 'block';
+    document.getElementById('final-attempts').textContent = attempts;
+  }
+
+  function restartGame() { build(); }
+
+  build();
+</script>
+{% endblock %}

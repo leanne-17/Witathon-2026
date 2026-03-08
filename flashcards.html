@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}Flashcards — EduPal{% endblock %}
+
+{% block extra_styles %}
+.fc-header { margin-bottom: 36px; }
+.fc-header h1 { font-size: 2rem; margin-bottom: 8px; }
+
+.fc-counter { text-align: center; color: var(--muted); font-size: .9rem; margin-bottom: 20px; }
+
+/* Flip card */
+.flip-wrap {
+  perspective: 1000px;
+  width: 100%; max-width: 560px;
+  height: 260px; margin: 0 auto 28px; cursor: pointer;
+}
+.flip-card {
+  width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .55s ease;
+  position: relative;
+}
+.flip-wrap.flipped .flip-card { transform: rotateY(180deg); }
+
+.flip-face {
+  position: absolute; inset: 0; border-radius: var(--radius);
+  backface-visibility: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 32px; text-align: center;
+}
+.flip-front {
+  background: linear-gradient(135deg, #1e1e35, #252540);
+  border: 1px solid var(--accent1);
+  box-shadow: var(--glow);
+}
+.flip-back {
+  background: linear-gradient(135deg, #1e2e28, #1e3028);
+  border: 1px solid var(--accent3);
+  box-shadow: 0 0 28px rgba(67,232,176,.3);
+  transform: rotateY(180deg);
+}
+.face-label {
+  font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
+  margin-bottom: 16px;
+}
+.flip-front .face-label { color: var(--accent1); }
+.flip-back  .face-label { color: var(--accent3); }
+.face-text {
+  font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 700;
+  line-height: 1.35;
+}
+.flip-hint { font-size: .78rem; color: var(--muted); margin-top: 10px; }
+
+.fc-nav {
+  display: flex; align-items: center; justify-content: center; gap: 16px;
+}
+.fc-nav button { min-width: 110px; }
+
+.deck-dots {
+  display: flex; gap: 8px; justify-content: center; margin-top: 20px;
+}
+.deck-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--border); transition: background .2s, transform .2s;
+}
+.deck-dot.active { background: var(--accent1); transform: scale(1.3); }
+.deck-dot.seen   { background: var(--muted); }
+
+.all-done {
+  text-align: center; display: none;
+  animation: fadeUp .5s ease both;
+}
+.all-done h2 { font-size: 1.8rem; margin-bottom: 12px; }
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <span class="pill fade-up">Flashcards</span>
+  <div class="fc-header fade-up fade-up-d1">
+    <h1>Study with flashcards 🃏</h1>
+    <p style="color:var(--muted)">Tap a card to flip it. Work through all cards to finish.</p>
+  </div>
+
+  <div id="card-area">
+    <p class="fc-counter" id="fc-counter"></p>
+
+    <div class="flip-wrap" id="flip-wrap" onclick="flipCard()">
+      <div class="flip-card" id="flip-card">
+        <div class="flip-face flip-front">
+          <span class="face-label">Term</span>
+          <div class="face-text" id="front-text"></div>
+          <span class="flip-hint">Tap to reveal</span>
+        </div>
+        <div class="flip-face flip-back">
+          <span class="face-label">Definition</span>
+          <div class="face-text" id="back-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fc-nav fade-up fade-up-d2">
+      <button class="btn btn-ghost" onclick="prevCard()">← Prev</button>
+      <button class="btn btn-primary" onclick="nextCard()">Next →</button>
+    </div>
+
+    <div class="deck-dots" id="deck-dots"></div>
+  </div>
+
+  <div class="all-done card" id="all-done">
+    <h2>All done! 🎉</h2>
+    <p style="color:var(--muted);margin-bottom:24px">You've reviewed all the flashcards.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="restartDeck()">Review again 🔄</button>
+      <a href="/" class="btn btn-ghost">New file ←</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const CARDS = {{ cards|safe }};
+  let idx = 0;
+
+  const dotsEl  = document.getElementById('deck-dots');
+  const wrap    = document.getElementById('flip-wrap');
+
+  // Build dots
+  CARDS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'deck-dot' + (i === 0 ? ' active' : '');
+    d.id = `dot-${i}`;
+    dotsEl.appendChild(d);
+  });
+
+  function render() {
+    const c = CARDS[idx];
+    wrap.classList.remove('flipped');
+    document.getElementById('front-text').textContent = c.term;
+    document.getElementById('back-text').textContent  = c.definition;
+    document.getElementById('fc-counter').textContent = `Card ${idx + 1} of ${CARDS.length}`;
+    CARDS.forEach((_, i) => {
+      const d = document.getElementById(`dot-${i}`);
+      d.className = 'deck-dot' + (i < idx ? ' seen' : '') + (i === idx ? ' active' : '');
+    });
+  }
+
+  function flipCard() { wrap.classList.toggle('flipped'); }
+
+  function nextCard() {
+    if (idx < CARDS.length - 1) { idx++; render(); }
+    else showDone();
+  }
+
+  function prevCard() {
+    if (idx > 0) { idx--; render(); }
+  }
+
+  function showDone() {
+    document.getElementById('card-area').style.display = 'none';
+    document.getElementById('all-done').style.display = 'block';
+  }
+
+  function restartDeck() {
+    idx = 0;
+    document.getElementById('card-area').style.display = 'block';
+    document.getElementById('all-done').style.display = 'none';
+    render();
+  }
+
+  render();
+</script>
+{% endblock %}

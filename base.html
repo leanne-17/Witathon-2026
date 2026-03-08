@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}EduPal{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0d14;
+      --surface:  #16161f;
+      --card:     #1e1e2e;
+      --border:   #2a2a3d;
+      --accent1:  #7c6af7;
+      --accent2:  #f7516a;
+      --accent3:  #43e8b0;
+      --accent4:  #f7c948;
+      --text:     #e8e8f0;
+      --muted:    #7878a0;
+      --radius:   14px;
+      --glow:     0 0 28px rgba(124,106,247,.35);
+      --sidebar-w: 60px;
+      --sidebar-expanded: 220px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -1;
+      background-image:
+        linear-gradient(rgba(124,106,247,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124,106,247,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      height: 100vh;
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      transition: width .25s ease;
+      z-index: 200;
+    }
+    /* Expand on hover */
+    .sidebar:hover { width: var(--sidebar-expanded); }
+
+    .sidebar-top {
+      display: flex; align-items: center; gap: 12px;
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap; overflow: hidden;
+    }
+    .sidebar-top .hamburger {
+      font-size: 1.4rem; color: var(--muted); flex-shrink: 0;
+      transition: color .2s;
+    }
+    .sidebar:hover .hamburger { color: var(--accent1); }
+    .sidebar-top .brand {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem;
+      background: linear-gradient(135deg, var(--accent1), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      opacity: 0; transition: opacity .2s .05s;
+      white-space: nowrap;
+    }
+    .sidebar:hover .brand { opacity: 1; }
+
+    .sidebar nav {
+      flex: 1; padding: 12px 0;
+      display: flex; flex-direction: column; gap: 2px;
+      /* override any inherited nav styles */
+      border: none; background: none; position: static;
+      backdrop-filter: none;
+    }
+
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 14px;
+      padding: 11px 18px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: .9rem; font-family: 'DM Sans', sans-serif;
+      white-space: nowrap; overflow: hidden;
+      border-radius: 8px; margin: 0 8px;
+      transition: background .15s, color .15s;
+      position: relative;
+    }
+    .sidebar nav a:hover {
+      background: rgba(124,106,247,.1);
+      color: var(--text);
+    }
+    .sidebar nav a.active {
+      background: rgba(124,106,247,.15);
+      color: var(--accent1);
+    }
+    .sidebar nav a i {
+      font-size: 1.2rem; flex-shrink: 0;
+      transition: color .15s;
+    }
+    .sidebar nav a:hover i,
+    .sidebar nav a.active i { color: var(--accent1); }
+
+    .sidebar nav a .nav-label {
+      opacity: 0; transition: opacity .15s .05s;
+      font-size: .88rem;
+    }
+    .sidebar:hover .nav-label { opacity: 1; }
+
+    /* Tooltip shown when sidebar is collapsed */
+    .sidebar nav a .tooltip {
+      position: absolute; left: calc(var(--sidebar-w) + 8px); top: 50%;
+      transform: translateY(-50%);
+      background: var(--card); color: var(--text);
+      padding: 4px 10px; border-radius: 6px;
+      font-size: .78rem; white-space: nowrap;
+      border: 1px solid var(--border);
+      pointer-events: none; opacity: 0;
+      transition: opacity .15s;
+      z-index: 300;
+    }
+    .sidebar nav a:hover .tooltip { opacity: 1; }
+    .sidebar:hover .tooltip { display: none; }
+
+    .sidebar-footer {
+      padding: 14px 8px;
+      border-top: 1px solid var(--border);
+    }
+    .sidebar-footer a {
+      display: flex; align-items: center; gap: 14px;
+      padding: 11px 10px;
+      color: var(--muted); text-decoration: none;
+      border-radius: 8px; white-space: nowrap; overflow: hidden;
+      transition: background .15s, color .15s;
+    }
+    .sidebar-footer a:hover { background: rgba(247,81,106,.1); color: var(--accent2); }
+    .sidebar-footer a i { font-size: 1.2rem; flex-shrink: 0; }
+    .sidebar-footer .nav-label { opacity: 0; transition: opacity .15s .05s; font-size: .88rem; }
+    .sidebar:hover .sidebar-footer .nav-label { opacity: 1; }
+
+    /* ── Main content area ── */
+    .page-shell {
+      margin-left: var(--sidebar-w);
+      flex: 1; min-height: 100vh;
+      transition: margin-left .25s ease;
+      display: flex; flex-direction: column;
+    }
+
+    .page-wrap {
+      max-width: 860px; width: 100%;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* ── Typography & shared components ── */
+    h1, h2, h3 {
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      line-height: 1.2; letter-spacing: -0.3px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 14px; border-radius: 99px;
+      font-size: .75rem; font-weight: 600;
+      letter-spacing: .05em; text-transform: uppercase;
+      background: rgba(124,106,247,.15);
+      color: var(--accent1);
+      border: 1px solid rgba(124,106,247,.3);
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px; border-radius: var(--radius);
+      font-family: 'Syne', sans-serif; font-weight: 700;
+      font-size: .9rem; cursor: pointer; border: none;
+      transition: transform .15s, box-shadow .15s;
+      text-decoration: none;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: var(--accent1); color: #fff;
+      box-shadow: 0 4px 20px rgba(124,106,247,.4);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 28px rgba(124,106,247,.55); }
+    .btn-ghost {
+      background: var(--card); color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp .5s ease both; }
+    .fade-up-d1 { animation-delay: .1s; }
+    .fade-up-d2 { animation-delay: .2s; }
+    .fade-up-d3 { animation-delay: .3s; }
+    .fade-up-d4 { animation-delay: .4s; }
+
+    {% block extra_styles %}{% endblock %}
+  </style>
+</head>
+<body>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <img src="/static/Robot.png" class="hamburger" style="width:38px;height:44px;object-fit:contain;" alt="EduPal logo"/>
+      <span class="brand">EduPal</span>
+    </div>
+
+    <nav>
+      <a href="/" {% if active_page == 'home' %}class="active"{% endif %}>
+        <i class="bx bxs-home"></i>
+        <span class="nav-label">Home</span>
+        <span class="tooltip">Home</span>
+      </a>
+      <a href="/dashboard" {% if active_page == 'dashboard' %}class="active"{% endif %}>
+        <i class="bx bxs-dashboard"></i>
+        <span class="nav-label">Dashboard</span>
+        <span class="tooltip">Dashboard</span>
+      </a>
+      <a href="#" {% if active_page == 'account' %}class="active"{% endif %}>
+        <i class="bx bxs-user"></i>
+        <span class="nav-label">Account</span>
+        <span class="tooltip">Account</span>
+      </a>
+      <a href="/settings" {% if active_page == 'settings' %}class="active"{% endif %}>
+        <i class="bx bxs-cog"></i>
+        <span class="nav-label">Settings</span>
+        <span class="tooltip">Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="#">
+        <i class="bx bxs-log-out"></i>
+        <span class="nav-label">Log Out</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Page content ── -->
+  <div class="page-shell">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- Apply saved accessibility settings across all pages -->
+  <script>
+  (function() {
+    var s = JSON.parse(localStorage.getItem('edupal_a11y_settings') || '{}');
+    var r = document.documentElement;
+    function lh(hex, amt) {
+      var n = parseInt(hex.slice(1),16);
+      var r2 = Math.min(255,(n>>16)+amt), g2=Math.min(255,((n>>8)&0xff)+amt), b2=Math.min(255,(n&0xff)+amt);
+      return '#'+(r2<<16|g2<<8|b2).toString(16).padStart(6,'0');
+    }
+    if (s.bgColor)       { r.style.setProperty('--bg', s.bgColor); r.style.setProperty('--card', lh(s.bgColor,14)); r.style.setProperty('--surface', lh(s.bgColor,9)); }
+    if (s.textColor)     { r.style.setProperty('--text', s.textColor); }
+    if (s.fontSize)      { document.body && (document.body.style.fontSize = s.fontSize + 'px'); }
+    if (s.lineHeight)    { document.body && (document.body.style.lineHeight = s.lineHeight); }
+    if (s.letterSpacing) { document.body && (document.body.style.letterSpacing = parseFloat(s.letterSpacing).toFixed(2) + 'em'); }
+    if (s.fontFamily)    { document.body && (document.body.style.fontFamily = s.fontFamily); }
+    if (s.reduceMotion)  { var st=document.createElement('style'); st.id='a11yReduceMotion'; st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}'; document.head.appendChild(st); }
+    if (s.focusHighlight){ var st=document.createElement('style'); st.id='a11yFocus'; st.textContent='*:focus{outline:3px solid var(--accent3)!important;outline-offset:3px!important}'; document.head.appendChild(st); }
+    if (s.underlineLinks){ var st=document.createElement('style'); st.id='a11yLinks'; st.textContent='a{text-decoration:underline!important}'; document.head.appendChild(st); }
+    if (s.hideGrid)      { var st=document.createElement('style'); st.id='a11yGrid'; st.textContent='body::before{display:none!important}'; document.head.appendChild(st); }
+  })();
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

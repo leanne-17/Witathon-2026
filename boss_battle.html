@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% block title %}Boss Battle — EduPal{% endblock %}
+
+{% block extra_styles %}
+/* ── Layout ── */
+.battle-wrap { max-width: 700px; margin: 0 auto; padding: 48px 24px 100px; }
+
+/* ── Scene ── */
+.scene {
+  position: relative; height: 220px; margin-bottom: 36px;
+  background: linear-gradient(180deg, #0a0a18 60%, #13132a 100%);
+  border-radius: 18px; border: 1px solid var(--border);
+  overflow: hidden;
+}
+/* Stars */
+.scene::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(1.5px 1.5px at 10% 20%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 50%, #fff 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 55% 15%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 60%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 30%, #fff 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 20% 75%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 85%, #fff 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 80%, #fff 0%, transparent 100%);
+  opacity: .6;
+}
+
+.boss-sprite {
+  position: absolute; right: 48px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 5.5rem; line-height: 1;
+  filter: drop-shadow(0 0 18px rgba(247,81,106,.6));
+  transition: transform .15s;
+}
+.boss-sprite.hit { animation: bossHit .35s ease; }
+@keyframes bossHit {
+  0%,100% { transform: translateY(-50%) scale(1);   filter: drop-shadow(0 0 18px rgba(247,81,106,.6)); }
+  40%      { transform: translateY(-50%) scale(1.12); filter: drop-shadow(0 0 32px rgba(255,80,80,1)); }
+}
+.boss-sprite.dead { animation: bossDie .6s ease forwards; }
+@keyframes bossDie {
+  to { transform: translateY(100px) scale(0.3) rotate(20deg); opacity: 0; }
+}
+
+.player-sprite {
+  position: absolute; left: 48px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 4rem; line-height: 1;
+  filter: drop-shadow(0 0 12px rgba(124,106,247,.5));
+}
+
+/* Floating damage number */
+.dmg-float {
+  position: absolute; right: 90px; top: 24px;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem;
+  color: var(--accent3); opacity: 0; pointer-events: none;
+  animation: floatUp .8s ease forwards;
+}
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-40px); }
+}
+
+/* ── HP Bars ── */
+.hp-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+.hp-label {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700;
+  margin-bottom: 4px;
+}
+.hp-track { height: 12px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.hp-fill {
+  height: 100%; border-radius: 99px;
+  transition: width .4s ease;
+}
+.hp-boss   { background: linear-gradient(90deg, var(--accent2), #ff8c42); }
+.hp-player { background: linear-gradient(90deg, var(--accent1), var(--accent3)); }
+
+/* ── Q Card ── */
+.q-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px;
+  animation: fadeUp .4s ease both;
+}
+.q-card .q-text {
+  font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700;
+  margin-bottom: 20px; line-height: 1.4;
+}
+.q-card .options { display: flex; flex-direction: column; gap: 9px; }
+.opt {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-radius: 10px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  cursor: pointer; font-size: .9rem; color: var(--text);
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.opt:not(:disabled):hover { border-color: var(--accent1); transform: translateX(3px); }
+.opt .ltr {
+  width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
+  background: var(--border); display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: .75rem; font-weight: 700;
+}
+.opt.correct { border-color: var(--accent3); background: rgba(67,232,176,.1); }
+.opt.correct .ltr { background: var(--accent3); color: #000; }
+.opt.wrong   { border-color: var(--accent2); background: rgba(247,81,106,.1); }
+.opt.wrong .ltr { background: var(--accent2); color: #fff; }
+.opt:disabled { cursor: default; }
+
+.battle-feedback {
+  margin-top: 14px; padding: 10px 14px; border-radius: 9px;
+  font-weight: 500; display: none; font-size: .88rem;
+}
+.battle-feedback.correct { background: rgba(67,232,176,.1); color: var(--accent3); border: 1px solid rgba(67,232,176,.25); }
+.battle-feedback.wrong   { background: rgba(247,81,106,.1); color: var(--accent2); border: 1px solid rgba(247,81,106,.25); }
+
+.q-footer { display: flex; justify-content: flex-end; margin-top: 18px; }
+
+/* ── End screens ── */
+.end-screen {
+  text-align: center; display: none;
+  padding: 48px 24px; animation: fadeUp .6s ease both;
+}
+.end-screen h2 { font-size: 2.4rem; margin-bottom: 12px; }
+.end-screen p  { color: var(--muted); margin-bottom: 24px; }
+.trophy { font-size: 4rem; margin-bottom: 16px; }
+{% endblock %}
+
+{% block content %}
+<div class="battle-wrap">
+  <span class="pill fade-up">⚔️ Boss Battle</span>
+  <h1 class="fade-up fade-up-d1" style="font-size:2rem;margin-bottom:8px">Answer to deal damage!</h1>
+  <p class="fade-up fade-up-d2" style="color:var(--muted);margin-bottom:28px">Defeat the boss before it defeats you. Wrong answers cost you HP.</p>
+
+  <!-- Scene -->
+  <div class="scene fade-up fade-up-d2">
+    <div class="player-sprite" id="player-sprite">🧙</div>
+    <div class="boss-sprite"   id="boss-sprite">👾</div>
+  </div>
+
+  <!-- HP bars -->
+  <div class="hp-row fade-up fade-up-d3">
+    <div>
+      <div class="hp-label"><span>👾 Boss</span><span id="boss-hp-txt">100 HP</span></div>
+      <div class="hp-track"><div class="hp-fill hp-boss" id="boss-bar" style="width:100%"></div></div>
+    </div>
+    <div>
+      <div class="hp-label"><span>🧙 You</span><span id="player-hp-txt">100 HP</span></div>
+      <div class="hp-track"><div class="hp-fill hp-player" id="player-bar" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <!-- Question -->
+  <div class="q-card fade-up fade-up-d4" id="q-card">
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="q-options"></div>
+    <div class="battle-feedback" id="battle-fb"></div>
+    <div class="q-footer">
+      <button class="btn btn-primary" id="attack-btn" style="display:none" onclick="nextQ()">
+        ⚔️ Attack!
+      </button>
+    </div>
+  </div>
+
+  <!-- Win -->
+  <div class="end-screen card" id="win-screen">
+    <div class="trophy">🏆</div>
+    <h2>Boss Defeated!</h2>
+    <p>Outstanding work — your knowledge is unstoppable!</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="startGame()">Play again 🔄</button>
+      <a href="/" class="btn btn-ghost">New file ←</a>
+    </div>
+  </div>
+
+  <!-- Lose -->
+  <div class="end-screen card" id="lose-screen">
+    <div class="trophy">💀</div>
+    <h2>Defeated…</h2>
+    <p>Review your notes and challenge the boss again!</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="startGame()">Try again 🔄</button>
+      <a href="/" class="btn btn-ghost">New file ←</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const QUESTIONS    = {{ questions|safe }};
+  const BOSS_DAMAGE  = 20;   // boss hits player on wrong answer
+  const PLAYER_DAMAGE= 25;   // player hits boss on correct answer (4 q × 25 = 100)
+  const letters = ['A','B','C','D'];
+
+  let qIdx = 0, bossHP = 100, playerHP = 100, answered = false;
+
+  function startGame() {
+    qIdx = 0; bossHP = 100; playerHP = 100; answered = false;
+    updateBars();
+    document.getElementById('win-screen').style.display  = 'none';
+    document.getElementById('lose-screen').style.display = 'none';
+    document.getElementById('q-card').style.display      = 'block';
+    document.getElementById('boss-sprite').className     = 'boss-sprite';
+    document.getElementById('player-sprite').className   = 'player-sprite';
+    renderQ();
+  }
+
+  function updateBars() {
+    const bPct = Math.max(0, bossHP);
+    const pPct = Math.max(0, playerHP);
+    document.getElementById('boss-bar').style.width   = bPct + '%';
+    document.getElementById('player-bar').style.width = pPct + '%';
+    document.getElementById('boss-hp-txt').textContent   = bPct + ' HP';
+    document.getElementById('player-hp-txt').textContent = pPct + ' HP';
+  }
+
+  function renderQ() {
+    answered = false;
+    document.getElementById('battle-fb').style.display  = 'none';
+    document.getElementById('attack-btn').style.display = 'none';
+    const q = QUESTIONS[qIdx];
+    document.getElementById('q-text').textContent = q.question;
+    const optsEl = document.getElementById('q-options');
+    optsEl.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt';
+      btn.innerHTML = `<span class="ltr">${letters[i]}</span> ${opt}`;
+      btn.onclick = () => pick(i, q.answer, q.boss_hp_damage || PLAYER_DAMAGE);
+      optsEl.appendChild(btn);
+    });
+  }
+
+  function pick(idx, correct, damage) {
+    if (answered) return;
+    answered = true;
+    const btns = document.querySelectorAll('.opt');
+    btns.forEach(b => b.disabled = true);
+    const fb = document.getElementById('battle-fb');
+
+    if (idx === correct) {
+      btns[idx].classList.add('correct');
+      bossHP -= damage;
+      fb.className = 'battle-feedback correct';
+      fb.textContent = `⚔️ Critical hit! Boss takes ${damage} damage!`;
+      // Boss hit animation
+      const boss = document.getElementById('boss-sprite');
+      boss.classList.add('hit');
+      setTimeout(() => boss.classList.remove('hit'), 400);
+      // Floating number
+      spawnFloat(`-${damage}`, 'var(--accent3)');
+    } else {
+      btns[idx].classList.add('wrong');
+      btns[correct].classList.add('correct');
+      playerHP -= BOSS_DAMAGE;
+      fb.className = 'battle-feedback wrong';
+      fb.textContent = `🛡️ Wrong! The boss strikes back for ${BOSS_DAMAGE} damage!`;
+      spawnFloat(`-${BOSS_DAMAGE}`, 'var(--accent2)', true);
+    }
+    fb.style.display = 'block';
+    updateBars();
+    document.getElementById('attack-btn').style.display = 'inline-flex';
+  }
+
+  function spawnFloat(text, color, isPlayer) {
+    const el = document.createElement('div');
+    el.className = 'dmg-float';
+    el.textContent = text;
+    el.style.color = color;
+    if (isPlayer) { el.style.right = 'auto'; el.style.left = '80px'; }
+    document.querySelector('.scene').appendChild(el);
+    setTimeout(() => el.remove(), 900);
+  }
+
+  function nextQ() {
+    qIdx++;
+    if (bossHP <= 0)       { endGame(true);  return; }
+    if (playerHP <= 0)     { endGame(false); return; }
+    if (qIdx >= QUESTIONS.length) {
+      // Ran out of questions — boss survives with remaining HP; player loses
+      endGame(bossHP <= 0);
+      return;
+    }
+    renderQ();
+  }
+
+  function endGame(win) {
+    document.getElementById('q-card').style.display = 'none';
+    if (win) {
+      document.getElementById('boss-sprite').classList.add('dead');
+      setTimeout(() => { document.getElementById('win-screen').style.display = 'block'; }, 700);
+    } else {
+      document.getElementById('player-sprite').style.opacity = '.3';
+      document.getElementById('lose-screen').style.display = 'block';
+    }
+  }
+
+  startGame();
+</script>
+{% endblock %}

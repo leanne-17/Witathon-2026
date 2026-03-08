@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Quiz — EduPal{% endblock %}
+
+{% block extra_styles %}
+.quiz-header { margin-bottom: 36px; }
+.quiz-header h1 { font-size: 2rem; margin-bottom: 8px; }
+
+.progress-bar-wrap {
+  background: var(--border); border-radius: 99px; height: 6px; margin-bottom: 32px;
+}
+.progress-bar {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent1), var(--accent3));
+  transition: width .4s ease;
+}
+
+.q-counter { font-size: .85rem; color: var(--muted); margin-bottom: 10px; }
+
+.question-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 32px;
+  animation: fadeUp .4s ease both;
+}
+.question-text {
+  font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700;
+  margin-bottom: 24px; line-height: 1.4;
+}
+
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option-btn {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px; border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface); cursor: pointer;
+  text-align: left; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: .95rem;
+  transition: border-color .15s, background .15s, transform .1s;
+}
+.option-btn:not(:disabled):hover {
+  border-color: var(--accent1); background: rgba(124,106,247,.07);
+  transform: translateX(4px);
+}
+.option-btn .letter {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  background: var(--border); display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: .8rem; font-weight: 700;
+}
+.option-btn.correct { border-color: var(--accent3); background: rgba(67,232,176,.1); }
+.option-btn.correct .letter { background: var(--accent3); color: #000; }
+.option-btn.wrong   { border-color: var(--accent2); background: rgba(247,81,106,.1); }
+.option-btn.wrong .letter { background: var(--accent2); color: #fff; }
+.option-btn:disabled { cursor: default; }
+
+.feedback {
+  margin-top: 18px; padding: 12px 16px; border-radius: 10px;
+  font-weight: 500; display: none;
+}
+.feedback.correct { background: rgba(67,232,176,.12); color: var(--accent3); border: 1px solid rgba(67,232,176,.3); }
+.feedback.wrong   { background: rgba(247,81,106,.12); color: var(--accent2); border: 1px solid rgba(247,81,106,.3); }
+
+.nav-row { display: flex; justify-content: flex-end; margin-top: 22px; }
+
+/* Score screen */
+.score-screen {
+  text-align: center; display: none; animation: fadeUp .5s ease both;
+}
+.score-circle {
+  width: 140px; height: 140px; border-radius: 50%;
+  border: 5px solid var(--accent1);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  margin: 0 auto 24px; box-shadow: var(--glow);
+}
+.score-circle .big  { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; }
+.score-circle .lbl  { font-size: .75rem; color: var(--muted); }
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+  <span class="pill fade-up">Quiz</span>
+  <div class="quiz-header fade-up fade-up-d1">
+    <h1>Test your knowledge 🧩</h1>
+    <p style="color:var(--muted)">Answer each question — no peeking!</p>
+  </div>
+
+  <div class="progress-bar-wrap fade-up fade-up-d2">
+    <div class="progress-bar" id="progress" style="width:0%"></div>
+  </div>
+
+  <div id="quiz-area">
+    <p class="q-counter" id="q-counter"></p>
+    <div class="question-card" id="question-card">
+      <div class="question-text" id="question-text"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-primary" id="next-btn" style="display:none" onclick="nextQuestion()">
+        Next →
+      </button>
+    </div>
+  </div>
+
+  <div class="score-screen card" id="score-screen">
+    <h2 style="margin-bottom:24px">Quiz Complete! 🎉</h2>
+    <div class="score-circle">
+      <span class="big" id="score-num"></span>
+      <span class="lbl">correct</span>
+    </div>
+    <p id="score-msg" style="color:var(--muted);margin-bottom:24px"></p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="restartQuiz()">Retry 🔄</button>
+      <a href="/" class="btn btn-ghost">New file ←</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const QUESTIONS = {{ questions|safe }};
+  let current = 0, score = 0, answered = false;
+
+  function renderQuestion() {
+    const q = QUESTIONS[current];
+    const total = QUESTIONS.length;
+
+    document.getElementById('q-counter').textContent = `Question ${current + 1} of ${total}`;
+    document.getElementById('progress').style.width = `${(current / total) * 100}%`;
+    document.getElementById('question-text').textContent = q.question;
+
+    const opts = document.getElementById('options');
+    opts.innerHTML = '';
+    const letters = ['A','B','C','D'];
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerHTML = `<span class="letter">${letters[i]}</span> ${opt}`;
+      btn.onclick = () => selectAnswer(i, q.answer);
+      opts.appendChild(btn);
+    });
+
+    document.getElementById('feedback').style.display = 'none';
+    document.getElementById('next-btn').style.display = 'none';
+    answered = false;
+  }
+
+  function selectAnswer(idx, correct) {
+    if (answered) return;
+    answered = true;
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach(b => b.disabled = true);
+
+    const fb = document.getElementById('feedback');
+    if (idx === correct) {
+      score++;
+      btns[idx].classList.add('correct');
+      fb.className = 'feedback correct';
+      fb.textContent = '✓ Correct!';
+    } else {
+      btns[idx].classList.add('wrong');
+      btns[correct].classList.add('correct');
+      fb.className = 'feedback wrong';
+      fb.textContent = `✗ The correct answer was: ${['A','B','C','D'][correct]}.`;
+    }
+    fb.style.display = 'block';
+    document.getElementById('next-btn').style.display = 'inline-flex';
+  }
+
+  function nextQuestion() {
+    current++;
+    if (current < QUESTIONS.length) {
+      renderQuestion();
+    } else {
+      showScore();
+    }
+  }
+
+  function showScore() {
+    document.getElementById('quiz-area').style.display = 'none';
+    document.getElementById('progress').style.width = '100%';
+    const screen = document.getElementById('score-screen');
+    screen.style.display = 'block';
+    document.getElementById('score-num').textContent = `${score}/${QUESTIONS.length}`;
+    const pct = (score / QUESTIONS.length) * 100;
+    const msgs = ['Keep studying! 📚', 'Getting there! 💪', 'Good work! 👍', 'Great job! 🌟', 'Perfect score! 🏆'];
+    document.getElementById('score-msg').textContent = msgs[Math.floor(pct / 25)];
+  }
+
+  function restartQuiz() {
+    current = 0; score = 0;
+    document.getElementById('quiz-area').style.display = 'block';
+    document.getElementById('score-screen').style.display = 'none';
+    renderQuestion();
+  }
+
+  renderQuestion();
+</script>
+{% endblock %}
