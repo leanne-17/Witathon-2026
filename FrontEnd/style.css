@@ -1,0 +1,183 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #E0F6F9;
+    font-family: Arial, sans-serif;
+}
+
+
+/* SIDEBAR */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 100vh;
+    background: #002244;
+    padding: 10px;
+    transition: all 0.5s ease;
+}
+
+.sidebar.active {
+    width: 250px;
+}
+
+
+/* TOP AREA */
+
+.sidebar .top {
+    position: relative;
+    height: 120px;
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.logo-img {
+    width: 70px;
+    height: 70px;
+    border-radius: 100%;
+    border: 2px solid #E0F6F9;
+    object-fit: cover;
+}
+
+
+/* MENU BUTTON */
+
+#btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white;
+    font-size: 26px;
+    cursor: pointer;
+}
+
+
+/* SIDEBAR LIST */
+
+.sidebar ul {
+    margin-top: 20px;
+}
+
+.sidebar ul li {
+    position: relative;
+    list-style: none;
+    height: 50px;
+    margin: 10px 0;
+}
+
+.sidebar ul li a {
+    color: white;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    border-radius: 10px;
+}
+
+.sidebar ul li a:hover {
+    background: white;
+    color: #002244;
+}
+
+.sidebar ul li a i {
+    min-width: 50px;
+    text-align: center;
+    font-size: 20px;
+}
+
+.nav-item {
+    opacity: 0;
+    transition: 0.3s;
+}
+
+.sidebar.active .nav-item {
+    opacity: 1;
+}
+
+
+/* TOOLTIP */
+
+.tooltip {
+    position: absolute;
+    left: 90px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    color: #002244;
+    padding: 4px 10px;
+    border-radius: 6px;
+    opacity: 0;
+}
+
+.sidebar ul li:hover .tooltip {
+    opacity: 1;
+}
+
+.sidebar.active .tooltip {
+    display: none;
+}
+
+
+/* MAIN CONTENT */
+
+.main-content {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+    min-height: 100vh;
+    padding: 40px;
+    transition: all 0.5s ease;
+}
+
+.sidebar.active ~ .main-content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+}
+
+
+/* HEADER */
+
+.headerDash {
+    text-align: center;
+    font-size: 60px;
+    margin-bottom: 40px;
+    color: #002244;
+}
+
+
+/* BUTTON GROUP */
+
+.btn-group {
+    width: 70%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+
+/* DASHBOARD BUTTONS */
+
+.dash-btn {
+    display: block;
+    width: 100%;
+    padding: 25px;
+    margin-bottom: 25px;
+    text-align: center;
+    background: #2D68C4;
+    color: white;
+    font-size: 20px;
+    border: 3px solid #002244;
+    text-decoration: none;
+}
+
+.dash-btn:hover {
+    background: #2D68C5;
+}
